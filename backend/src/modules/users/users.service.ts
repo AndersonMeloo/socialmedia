@@ -16,7 +16,9 @@ export class UsersService {
       },
     });
 
-    return user;
+    const { password, ...userWithoutPassword } = user;
+
+    return userWithoutPassword;
   }
 
   findAll() {
