@@ -20,9 +20,22 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  // Buscando todos os Usuários
   @Get()
   findAll() {
     return this.usersService.findAll();
+  }
+
+  // Buscando todos os E-mails
+  @Get('emails')
+  findAllEmails() {
+    return this.usersService.findAllEmails();
+  }
+
+  // Buscando Usuário por E-mail
+  @Get('email/:email')
+  findUserByEmail(@Param('email') email: string) {
+    return this.usersService.findUserByEmail(email);
   }
 
   @Get(':id')
