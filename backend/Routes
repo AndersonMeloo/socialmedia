@@ -6,6 +6,15 @@ POST http://localhost:3000/users
   "password": "123456"
 }
 
+Login:
+POST http://localhost:3000/auth/login
+{
+  "email": "teste@email.com",
+  "password": "123456"
+}
+
+****É NECESSÁRIO ESTAR LOGADO PARA GERAR O TOKEN E ACESSAR AS ROTAS PROTEGIDAS / ENDPOINTS*****
+
 Buscar Todos Usuários por E-mail:
 GET http://localhost:3000/users/emails
 
@@ -20,10 +29,3 @@ PATCH http://localhost:3000/users/ => "uuid"
 
 Deletar um Usuário:
 DELETE http://localhost:3000/users/ => "uuid"
-
-Login
-POST http://localhost:3000/auth/login
-{
-  "email": "teste@email.com",
-  "password": "123456"
-}
