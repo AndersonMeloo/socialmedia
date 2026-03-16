@@ -77,7 +77,8 @@ export class AuthService {
       }
 
       return this.generateTokens(user.id, user.email, user.role);
-    } catch (error) {
+    } catch (err) {
+      console.log(err);
       throw new UnauthorizedException('Refresh token inválido');
     }
   }
