@@ -50,9 +50,9 @@ model Post {
   videoUrl    String?
   postedAt    DateTime?
   status      PostStatus       @default(PENDING)
-
-  nichedId    String
-  niche       Niche           @relation(fields: [nichedId], references: [id])
+  scheduledAt DateTime? 
+  nicheId    String
+  niche       Niche           @relation(fields: [nicheId], references: [id])
 
   userId      String
   user        User            @relation(fields: [userId], references: [id])
