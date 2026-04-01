@@ -9,6 +9,40 @@ import * as bcrypt from 'bcrypt';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findOrCreateGoogleUser(data: {
+    email: string;
+    googleId: string;
+    name: string | null;
+  }): Promise<User> {
+    const existingByGoogleId = await this.prisma.user.findUnique({
+      where: { googleId: data.googleId },
+    });
+
+    if (existingByGoogleId) return existingByGoogleId;
+
+    const existingByEmail = await this.prisma.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (existingByEmail) {
+      return this.prisma.user.update({
+        where: { id: existingByEmail.id },
+        data: {
+          googleId: data.googleId,
+          name: existingByEmail.name ?? data.name,
+        },
+      });
+    }
+
+    return this.prisma.user.create({
+      data: {
+        email: data.email,
+        name: data.name,
+        googleId: data.googleId,
+      },
+    });
+  }
+
   // Criação do Usuário
   async create(createUserDto: CreateUserDto) {
     if (!createUserDto.password) {
@@ -24,7 +58,9 @@ export class UsersService {
       },
     });
 
-    const { password, ...userWithoutPassword } = user;
+    const userWithoutPassword = Object.fromEntries(
+      Object.entries(user).filter(([key]) => key !== 'password'),
+    ) as Omit<User, 'password'>;
 
     return userWithoutPassword;
   }
