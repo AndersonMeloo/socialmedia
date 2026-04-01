@@ -4,12 +4,16 @@ import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PassportModule } from '@nestjs/passport';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [
     // Importa o UsersModule usando forwardRef para resolver dependência circular,
     // pois o UsersModule também importa o AuthModule
     forwardRef(() => UsersModule),
+
+    PassportModule.register({ session: false }),
 
     // Configura o JwtModule de forma assíncrona usando ConfigService para acessar a variável de ambiente JWT_SECRET
     JwtModule.registerAsync({
@@ -22,7 +26,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, GoogleStrategy],
   exports: [JwtModule],
 })
 export class AuthModule {}
