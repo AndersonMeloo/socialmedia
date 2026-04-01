@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Platform, Post, SocialAccount } from '@prisma/client';
 import { PrismaService } from 'src/database/prisma.service';
 
 @Injectable()
@@ -27,21 +28,77 @@ export class PublishScheduler {
           `🚀 Publicando post ${post.id} | Plataforma: ${post.platform}`,
         );
 
-        // Aqui futuramente entrara a API do TikTok / YouTube
-        // await this.publishToPlatform(post);
+        try {
+          await this.publishToPlatform(post);
 
-        await this.prisma.post.update({
-          where: { id: post.id },
-          data: {
-            status: 'POSTED',
-            postedAt: new Date(),
-          },
-        });
+          await this.prisma.post.update({
+            where: { id: post.id },
+            data: {
+              status: 'POSTED',
+              postedAt: new Date(),
+            },
+          });
+        } catch (publishError) {
+          console.error(
+            `Falha ao publicar post ${post.id} | Plataforma: ${post.platform}`,
+            publishError,
+          );
+
+          await this.prisma.post.update({
+            where: { id: post.id },
+            data: {
+              status: 'FAILED',
+            },
+          });
+        }
       }
 
       console.log('Publicação finalizada');
     } catch (error) {
       console.error('Erro na publicação:', error);
     }
+  }
+
+  private async publishToPlatform(post: Post): Promise<void> {
+    if (post.platform !== Platform.YOUTUBE) {
+      throw new Error(`Somente YOUTUBE esta habilitado no momento`);
+    }
+
+    const socialAccount = await this.prisma.socialAccount.findFirst({
+      where: {
+        userId: post.userId,
+        platform: post.platform,
+      },
+    });
+
+    if (!socialAccount) {
+      throw new Error(
+        `Conta social nao encontrada para user ${post.userId} na plataforma ${post.platform}`,
+      );
+    }
+
+    await this.publishToYoutube(post, socialAccount);
+  }
+
+  private async publishToYoutube(
+    post: Post,
+    socialAccount: SocialAccount,
+  ): Promise<void> {
+    if (!socialAccount.accessToken) {
+      throw new Error('Access token do YouTube ausente');
+    }
+
+    // Placeholder da integração real com YouTube Data API.
+    await this.simulateExternalPublish('YOUTUBE', post.id);
+  }
+
+  private async simulateExternalPublish(
+    platform: 'YOUTUBE',
+    postId: string,
+  ): Promise<void> {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    console.log(
+      `Publicacao simulada com sucesso: ${platform} | post ${postId}`,
+    );
   }
 }
