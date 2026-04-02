@@ -33,3 +33,65 @@ DELETE http://localhost:3000/users/ => "uuid"
 
 Testando Token de Refresh:
 POST http://localhost:3000/auth/refresh
+
+
+====================
+GOOGLE AUTH (TESTE)
+====================
+
+Iniciar Login com Google (navegador):
+GET http://localhost:3000/auth/google
+
+Callback Google (automatico):
+GET http://localhost:3000/auth/google/redirect
+
+Teste sem frontend (retorna tokens em JSON):
+GET http://localhost:3000/auth/google/test
+
+
+====================
+NICHES
+====================
+
+Criar Nicho:
+POST http://localhost:3000/niches
+{
+  "name": "Cortes de Podcast",
+  "description": "Clipes curtos com insights",
+  "active": true
+}
+
+Listar Nichos:
+GET http://localhost:3000/niches
+
+Buscar Nicho por ID:
+GET http://localhost:3000/niches/SEU_NICHE_ID_UUID
+
+Atualizar Nicho:
+PATCH http://localhost:3000/niches/SEU_NICHE_ID_UUID
+{
+  "name": "Cortes de Podcast BR",
+  "active": true
+}
+
+Deletar Nicho:
+DELETE http://localhost:3000/niches/SEU_NICHE_ID_UUID
+
+
+====================
+POSTS (YOUTUBE)
+====================
+
+Importar Post por URL do YouTube:
+POST http://localhost:3000/posts/import-youtube-url
+{
+  "userId": "SEU_USER_ID_UUID",
+  "nicheId": "SEU_NICHE_ID_UUID",
+  "youtubeUrl": "https://www.youtube.com/watch?v=eQfqebZNEY0",
+  "scheduledAt": "2026-04-01T21:00:00.000Z"
+}
+
+Obs:
+- O user precisa ter conta YouTube conectada em SocialAccount.
+- O niche precisa estar ativo (active: true).
+- O post sera criado com status PENDING e publicado pelo scheduler.

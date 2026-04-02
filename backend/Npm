@@ -25,3 +25,7 @@ name?, password? - Já que terá duas formas de login (Cadastro Normal) e (Cadas
 prisma.schema: role ROLE: A permissão que o usuário terá dentro do sistema, podendo ser 'USER' ou 'ADMIN'
 
 HttpException + HttpStatus: Definir o Status Correto da Resposta e NestJS entende que é um ERRO HTTP
+
+
+npm install passport-google-oauth20
+npm install -D @types/passport-google-oauth20
