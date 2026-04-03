@@ -17,9 +17,155 @@ type UserWithNiches = {
   }[];
 };
 
+type PostOverview = {
+  date: string;
+  totalsForDay: {
+    views: number;
+    likes: number;
+    comments: number;
+  };
+  totalViewsAllVideos: number;
+  postedToday: {
+    id: string;
+    title: string;
+    videoUrl: string | null;
+    platform: string;
+    status: string;
+    postedAt: Date | null;
+    scheduledAt: Date | null;
+    latestAnalytics: {
+      views: number;
+      likes: number;
+      comments: number;
+      collectedAt: Date;
+    } | null;
+  }[];
+};
+
 @Injectable()
 export class PostsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async listPosts() {
+    return this.prisma.post.findMany({
+      orderBy: [
+        {
+          postedAt: 'desc',
+        },
+        {
+          scheduledAt: 'desc',
+        },
+      ],
+      include: {
+        niche: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        analytics: {
+          orderBy: {
+            collectedAt: 'desc',
+          },
+          take: 1,
+        },
+      },
+      take: 50,
+    });
+  }
+
+  async getPostsOverviewByDate(inputDate?: string): Promise<PostOverview> {
+    const targetDate = inputDate ? new Date(inputDate) : new Date();
+
+    if (Number.isNaN(targetDate.getTime())) {
+      throw new BadRequestException('Data invalida. Use YYYY-MM-DD.');
+    }
+
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const [analyticsOfDay, totalViews, postedToday] = await Promise.all([
+      this.prisma.postAnalytics.findMany({
+        where: {
+          collectedAt: {
+            gte: startOfDay,
+            lte: endOfDay,
+          },
+        },
+        select: {
+          views: true,
+          likes: true,
+          comments: true,
+        },
+      }),
+      this.prisma.postAnalytics.aggregate({
+        _sum: {
+          views: true,
+        },
+      }),
+      this.prisma.post.findMany({
+        where: {
+          postedAt: {
+            gte: startOfDay,
+            lte: endOfDay,
+          },
+        },
+        orderBy: {
+          postedAt: 'desc',
+        },
+        select: {
+          id: true,
+          title: true,
+          videoUrl: true,
+          platform: true,
+          status: true,
+          postedAt: true,
+          scheduledAt: true,
+          analytics: {
+            orderBy: {
+              collectedAt: 'desc',
+            },
+            take: 1,
+            select: {
+              views: true,
+              likes: true,
+              comments: true,
+              collectedAt: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    const totalsForDay = analyticsOfDay.reduce(
+      (acc, item) => {
+        acc.views += item.views;
+        acc.likes += item.likes;
+        acc.comments += item.comments;
+        return acc;
+      },
+      { views: 0, likes: 0, comments: 0 },
+    );
+
+    return {
+      date: startOfDay.toISOString().slice(0, 10),
+      totalsForDay,
+      totalViewsAllVideos: totalViews._sum.views ?? 0,
+      postedToday: postedToday.map((post) => ({
+        id: post.id,
+        title: post.title,
+        videoUrl: post.videoUrl,
+        platform: post.platform,
+        status: post.status,
+        postedAt: post.postedAt,
+        scheduledAt: post.scheduledAt,
+        latestAnalytics: post.analytics[0] ?? null,
+      })),
+    };
+  }
 
   async createPostFromYoutubeUrl(data: ImportYoutubePostDto) {
     const [user, niche, youtubeAccount] = await Promise.all([
