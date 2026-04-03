@@ -82,6 +82,15 @@ DELETE http://localhost:3000/niches/SEU_NICHE_ID_UUID
 POSTS (YOUTUBE)
 ====================
 
+Listar Posts (ultimos com analytics):
+GET http://localhost:3000/posts
+
+Resumo Diario de Posts e Analytics (data opcional):
+GET http://localhost:3000/posts/overview
+
+Resumo Diario por data especifica:
+GET http://localhost:3000/posts/overview?date=2026-04-02
+
 Importar Post por URL do YouTube:
 POST http://localhost:3000/posts/import-youtube-url
 {
@@ -95,3 +104,8 @@ Obs:
 - O user precisa ter conta YouTube conectada em SocialAccount.
 - O niche precisa estar ativo (active: true).
 - O post sera criado com status PENDING e publicado pelo scheduler.
+- O endpoint /posts retorna os posts com niche e ultimo snapshot de analytics.
+- O endpoint /posts/overview retorna:
+  - totalsForDay: views, likes, comments do dia
+  - totalViewsAllVideos: soma total de views no historico
+  - postedToday: videos postados no dia com data/hora e ultimo analytics
