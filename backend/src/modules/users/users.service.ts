@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, User } from '@prisma/client';
+import { Platform, Prisma, SocialAccount, User } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/database/prisma.service';
@@ -39,6 +39,43 @@ export class UsersService {
         email: data.email,
         name: data.name,
         googleId: data.googleId,
+      },
+    });
+  }
+
+  async upsertSocialAccount(data: {
+    userId: string;
+    platform: Platform;
+    accessToken: string;
+    refreshToken?: string | null;
+    tokenExpiry?: Date | null;
+  }): Promise<SocialAccount> {
+    const existingAccount = await this.prisma.socialAccount.findFirst({
+      where: {
+        userId: data.userId,
+        platform: data.platform,
+      },
+    });
+
+    if (existingAccount) {
+      return this.prisma.socialAccount.update({
+        where: { id: existingAccount.id },
+        data: {
+          accessToken: data.accessToken,
+          refreshToken:
+            data.refreshToken ?? existingAccount.refreshToken ?? null,
+          tokenExpiry: data.tokenExpiry ?? existingAccount.tokenExpiry,
+        },
+      });
+    }
+
+    return this.prisma.socialAccount.create({
+      data: {
+        userId: data.userId,
+        platform: data.platform,
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken ?? null,
+        tokenExpiry: data.tokenExpiry ?? null,
       },
     });
   }
