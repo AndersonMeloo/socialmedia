@@ -13,7 +13,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   ) {
     const googleConfig = getGoogleOAuthConfig(configService);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     super({
       clientID: googleConfig.clientID,
       clientSecret: googleConfig.clientSecret,
