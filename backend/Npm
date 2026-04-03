@@ -29,3 +29,10 @@ HttpException + HttpStatus: Definir o Status Correto da Resposta e NestJS entend
 
 npm install passport-google-oauth20
 npm install -D @types/passport-google-oauth20
+
+Google OAuth
+Places API: https://console.cloud.google.com/apis/library/places.googleapis.com
+Credenciais APIs e Serviços: https://console.cloud.google.com/apis/credentials?pli=1&project=socialmedia-492203&supportedpurview=project
+Criar ID OAuth: https://console.cloud.google.com/auth/clients/create?project=socialmedia-492203
+ID do Cliente: https://console.cloud.google.com/auth/clients/841257488624-9jpb6r9i36sdkjneturdc04je3rr9eco.apps.googleusercontent.com?project=socialmedia-492203
+Visão Geral de OAuth: https://console.cloud.google.com/auth/overview?pli=1&project=socialmedia-492203
