@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Platform, User } from '@prisma/client';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -41,7 +41,11 @@ export class AuthService {
     };
   }
 
-  async validateGoogleUser(profile: GoogleOAuthProfile): Promise<User> {
+  async validateGoogleUser(
+    profile: GoogleOAuthProfile,
+    accessToken: string,
+    refreshToken: string,
+  ): Promise<User> {
     const email = profile.emails?.[0]?.value;
 
     if (!email) {
@@ -50,11 +54,20 @@ export class AuthService {
       );
     }
 
-    return this.userService.findOrCreateGoogleUser({
+    const user = await this.userService.findOrCreateGoogleUser({
       email,
       googleId: profile.id,
       name: profile.displayName || null,
     });
+
+    await this.userService.upsertSocialAccount({
+      userId: user.id,
+      platform: Platform.YOUTUBE,
+      accessToken,
+      refreshToken,
+    });
+
+    return user;
   }
 
   async loginWithGoogle(user: User) {
