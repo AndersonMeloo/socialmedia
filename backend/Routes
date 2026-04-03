@@ -38,7 +38,6 @@ POST http://localhost:3000/auth/refresh
 ====================
 GOOGLE AUTH (TESTE)
 ====================
-
 Iniciar Login com Google (navegador):
 GET http://localhost:3000/auth/google
 
@@ -52,7 +51,6 @@ GET http://localhost:3000/auth/google/test
 ====================
 NICHES
 ====================
-
 Criar Nicho:
 POST http://localhost:3000/niches
 {
@@ -81,7 +79,6 @@ DELETE http://localhost:3000/niches/SEU_NICHE_ID_UUID
 ====================
 POSTS (YOUTUBE)
 ====================
-
 Listar Posts (ultimos com analytics):
 GET http://localhost:3000/posts
 
@@ -109,3 +106,10 @@ Obs:
   - totalsForDay: views, likes, comments do dia
   - totalViewsAllVideos: soma total de views no historico
   - postedToday: videos postados no dia com data/hora e ultimo analytics
+
+===========
+GET POSTS
+===========
+GET http://localhost:3000/posts
+GET http://localhost:3000/posts/overview
+GET http://localhost:3000/posts/overview?date=2026-04-02
