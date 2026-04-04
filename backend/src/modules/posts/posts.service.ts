@@ -68,8 +68,11 @@ export class PostsService {
     );
   }
 
-  async listPosts() {
+  async listPosts(userId: string) {
     return this.prisma.post.findMany({
+      where: {
+        userId,
+      },
       orderBy: [
         {
           postedAt: 'desc',
@@ -96,7 +99,10 @@ export class PostsService {
     });
   }
 
-  async getPostsOverviewByDate(inputDate?: string): Promise<PostOverview> {
+  async getPostsOverviewByDate(
+    userId: string,
+    inputDate?: string,
+  ): Promise<PostOverview> {
     const targetDate = inputDate ? new Date(inputDate) : new Date();
 
     if (Number.isNaN(targetDate.getTime())) {
@@ -112,6 +118,9 @@ export class PostsService {
     const [analyticsOfDay, totalViews, postedToday] = await Promise.all([
       this.prisma.postAnalytics.findMany({
         where: {
+          post: {
+            userId,
+          },
           collectedAt: {
             gte: startOfDay,
             lte: endOfDay,
@@ -124,12 +133,18 @@ export class PostsService {
         },
       }),
       this.prisma.postAnalytics.aggregate({
+        where: {
+          post: {
+            userId,
+          },
+        },
         _sum: {
           views: true,
         },
       }),
       this.prisma.post.findMany({
         where: {
+          userId,
           postedAt: {
             gte: startOfDay,
             lte: endOfDay,
