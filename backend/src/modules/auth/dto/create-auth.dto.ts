@@ -1,4 +1,4 @@
 export class CreateAuthDto {
-  token: string;
-  expiresIn: number;
+  token!: string;
+  expiresIn!: number;
 }
