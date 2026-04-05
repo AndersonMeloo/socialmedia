@@ -131,33 +131,7 @@ export class PostsService {
     const endOfDay = new Date(targetDate);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const [analyticsOfDay, totalViews, postedToday] = await Promise.all([
-      this.prisma.postAnalytics.findMany({
-        where: {
-          post: {
-            userId,
-          },
-          collectedAt: {
-            gte: startOfDay,
-            lte: endOfDay,
-          },
-        },
-        select: {
-          views: true,
-          likes: true,
-          comments: true,
-        },
-      }),
-      this.prisma.postAnalytics.aggregate({
-        where: {
-          post: {
-            userId,
-          },
-        },
-        _sum: {
-          views: true,
-        },
-      }),
+    const [postedToday, postedVideos] = await Promise.all([
       this.prisma.post.findMany({
         where: {
           userId,
@@ -191,22 +165,44 @@ export class PostsService {
           },
         },
       }),
+      this.prisma.post.findMany({
+        where: {
+          userId,
+          status: 'POSTED',
+        },
+        select: {
+          analytics: {
+            orderBy: {
+              collectedAt: 'desc',
+            },
+            take: 1,
+            select: {
+              views: true,
+            },
+          },
+        },
+      }),
     ]);
 
-    const totalsForDay = analyticsOfDay.reduce(
+    const totalsForDay = postedToday.reduce(
       (acc, item) => {
-        acc.views += item.views;
-        acc.likes += item.likes;
-        acc.comments += item.comments;
+        acc.views += item.analytics[0]?.views ?? 0;
+        acc.likes += item.analytics[0]?.likes ?? 0;
+        acc.comments += item.analytics[0]?.comments ?? 0;
         return acc;
       },
       { views: 0, likes: 0, comments: 0 },
     );
 
+    const totalViewsAllVideos = postedVideos.reduce(
+      (acc, item) => acc + (item.analytics[0]?.views ?? 0),
+      0,
+    );
+
     return {
       date: startOfDay.toISOString().slice(0, 10),
       totalsForDay,
-      totalViewsAllVideos: totalViews._sum.views ?? 0,
+      totalViewsAllVideos,
       postedToday: postedToday.map((post) => ({
         id: post.id,
         title: post.title,
