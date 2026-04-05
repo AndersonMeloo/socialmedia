@@ -10,6 +10,7 @@ export class GoogleAuthGuard extends AuthGuard('google') {
         'email',
         'profile',
         'https://www.googleapis.com/auth/youtube.upload',
+        'https://www.googleapis.com/auth/youtube.readonly',
       ],
       accessType: 'offline',
       prompt: 'consent',
