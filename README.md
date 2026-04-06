@@ -131,7 +131,3 @@ Algumas rotas importantes do backend:
 - O projeto depende de uma conta Google/YouTube com os escopos corretos para publicar e ler métricas.
 - Os números de views, curtidas e comentários não são em tempo real; eles são atualizados por coleta periódica.
 - Os vídeos publicados podem aparecer no painel com o link direto do YouTube.
-
-## Licença
-
-Projeto em desenvolvimento para uso próprio.
