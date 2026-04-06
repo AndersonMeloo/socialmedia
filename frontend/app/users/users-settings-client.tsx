@@ -50,7 +50,7 @@ export function UsersSettingsClient() {
   useEffect(() => {
     const session = getSession();
     if (!session.accessToken || !session.userId) {
-      setFeedback("Nao foi encontrada sessao ativa. Faca login antes de acessar Users.");
+      setFeedback("Não foi encontrada sessão ativa. Faça login antes de acessar Users.");
       return;
     }
 
@@ -72,7 +72,7 @@ export function UsersSettingsClient() {
   async function onSaveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!token || !userId) {
-      setFeedback("Informe token JWT e userId para salvar alteracoes.");
+      setFeedback("Informe token JWT e userId para salvar alterações.");
       return;
     }
 
@@ -102,7 +102,7 @@ export function UsersSettingsClient() {
     }
 
     const confirmed = window.confirm(
-      "Tem certeza que deseja deletar este usuario? Esta acao nao pode ser desfeita.",
+      "Tem certeza que deseja deletar este usuario? Esta ação não pode ser desfeita.",
     );
     if (!confirmed) return;
 
@@ -128,7 +128,7 @@ export function UsersSettingsClient() {
       <header className="rounded-2xl border bg-slate-50 p-5">
         <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Users</p>
         <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-          Perfil, Configuracoes e Conta
+          Perfil, Configurações e Conta
         </h2>
         <p className="mt-2 text-sm text-slate-600">
           Tela conectada ao backend para buscar, editar e deletar usuario.
@@ -136,9 +136,9 @@ export function UsersSettingsClient() {
       </header>
 
       <form onSubmit={onLoadProfile} className="rounded-xl border bg-white p-4">
-        <h3 className="text-base font-semibold text-slate-900">Autenticacao da tela</h3>
+        <h3 className="text-base font-semibold text-slate-900">Autenticação da tela</h3>
         <p className="mt-1 text-sm text-slate-600">
-          Token e userId sao preenchidos automaticamente apos login.
+          Token e userId são preenchidos automaticamente após login.
         </p>
         <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
           <label className="grid gap-1 text-sm text-slate-700">
