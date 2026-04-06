@@ -49,12 +49,8 @@ export default async function Home() {
   return (
     <section className="space-y-6">
       <header className="rounded-2xl border bg-panel-strong p-6 text-white">
-        <p className="text-xs uppercase tracking-[0.2em] text-cyan-200">Visao geral</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-cyan-200">Visão geral</p>
         <h2 className="mt-2 text-3xl font-semibold">Painel das Rotas do Backend</h2>
-        <p className="mt-3 max-w-3xl text-sm text-cyan-100">
-          Estrutura inicial das paginas para cada modulo. Voce pode evoluir daqui com
-          metricas, tabelas, formularios e integracao com API.
-        </p>
       </header>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
