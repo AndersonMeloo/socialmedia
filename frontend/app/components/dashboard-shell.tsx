@@ -118,10 +118,6 @@ export function DashboardShell({ children }: DashboardShellProps) {
                         ))}
                     </nav>
 
-                    <div className="mt-6 rounded-xl border bg-cyan-50 p-3 text-xs text-slate-700">
-                        Estrutura inicial pronta para voce customizar cards, filtros e metricas.
-                    </div>
-
                     {youtubeConnected ? (
                         <button
                             type="button"
