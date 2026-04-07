@@ -126,6 +126,10 @@ Algumas rotas importantes do backend:
 - `GET /users/:id/youtube-connection`
 - `DELETE /users/:id/youtube-connection`
 
+# GUIA DE TESTES 
+- `https://github.com/AndersonMeloo/PostAutomation/blob/main/backend/GUIA_TESTE_PUBLICACAO.md`
+- `https://github.com/AndersonMeloo/PostAutomation/blob/main/backend/Routes`
+
 ## Observações importantes
 
 - O projeto depende de uma conta Google/YouTube com os escopos corretos para publicar e ler métricas.
