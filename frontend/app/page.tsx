@@ -4,7 +4,17 @@ import { getPostsOverview } from "./lib/api";
 import { ACCESS_TOKEN_COOKIE } from "./lib/auth-client";
 import { backendModules } from "./lib/backend-routes";
 
-export default async function Home() {
+type HomePageProps = {
+  searchParams: Promise<{
+    chart?: string | string[];
+  }>;
+};
+
+export default async function Home({ searchParams }: HomePageProps) {
+  const query = await searchParams;
+  const chartParam = Array.isArray(query.chart) ? query.chart[0] : query.chart;
+  const chartMode = chartParam === "total" ? "total" : "daily";
+
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value ?? "";
 
@@ -15,15 +25,21 @@ export default async function Home() {
 
   let overview:
     | {
-        date: string;
-        totalsForDay: {
-          views: number;
-          likes: number;
-          comments: number;
-        };
-        totalViewsAllVideos: number;
-        postedToday: { id: string }[];
-      }
+      date: string;
+      totalsForDay: {
+        views: number;
+        likes: number;
+        comments: number;
+      };
+      totalsAllTime: {
+        views: number;
+        likes: number;
+        comments: number;
+      };
+      totalPostedVideos: number;
+      totalViewsAllVideos: number;
+      postedToday: { id: string }[];
+    }
     | null = null;
 
   try {
@@ -35,11 +51,28 @@ export default async function Home() {
   }
 
   const metrics = [
-    { label: "Views", value: overview?.totalsForDay.views ?? 0, tone: "bg-cyan-500" },
-    { label: "Curtidas", value: overview?.totalsForDay.likes ?? 0, tone: "bg-emerald-500" },
+    {
+      label: "Views",
+      value:
+        chartMode === "total"
+          ? overview?.totalsAllTime.views ?? 0
+          : overview?.totalsForDay.views ?? 0,
+      tone: "bg-cyan-500",
+    },
+    {
+      label: "Curtidas",
+      value:
+        chartMode === "total"
+          ? overview?.totalsAllTime.likes ?? 0
+          : overview?.totalsForDay.likes ?? 0,
+      tone: "bg-emerald-500",
+    },
     {
       label: "Comentarios",
-      value: overview?.totalsForDay.comments ?? 0,
+      value:
+        chartMode === "total"
+          ? overview?.totalsAllTime.comments ?? 0
+          : overview?.totalsForDay.comments ?? 0,
       tone: "bg-amber-500",
     },
   ];
@@ -93,6 +126,27 @@ export default async function Home() {
         </article>
       </div>
 
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <article className="rounded-xl border bg-white p-4">
+          <p className="text-sm text-slate-500">Curtidas totais</p>
+          <p className="mt-2 text-3xl font-semibold text-slate-900">
+            {overview?.totalsAllTime.likes ?? 0}
+          </p>
+        </article>
+        <article className="rounded-xl border bg-white p-4">
+          <p className="text-sm text-slate-500">Comentarios totais</p>
+          <p className="mt-2 text-3xl font-semibold text-slate-900">
+            {overview?.totalsAllTime.comments ?? 0}
+          </p>
+        </article>
+        <article className="rounded-xl border bg-white p-4">
+          <p className="text-sm text-slate-500">Videos postados no total</p>
+          <p className="mt-2 text-3xl font-semibold text-slate-900">
+            {overview?.totalPostedVideos ?? 0}
+          </p>
+        </article>
+      </div>
+
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         {backendModules.map((moduleItem) => (
           <Link
@@ -120,9 +174,35 @@ export default async function Home() {
       </section>
 
       <section className="rounded-xl border bg-white p-4">
-        <h3 className="text-lg font-semibold text-slate-900">Grafico diario</h3>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-lg font-semibold text-slate-900">
+            {chartMode === "total" ? "Grafico total" : "Grafico diario"}
+          </h3>
+          <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
+            <Link
+              href="/?chart=daily"
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${chartMode === "daily"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-600 hover:text-slate-900"
+                }`}
+            >
+              Diario
+            </Link>
+            <Link
+              href="/?chart=total"
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${chartMode === "total"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-600 hover:text-slate-900"
+                }`}
+            >
+              Totais
+            </Link>
+          </div>
+        </div>
         <p className="mt-1 text-sm text-slate-600">
-          Comparativo de views, curtidas e comentarios no dia selecionado pelo backend.
+          {chartMode === "total"
+            ? "Comparativo acumulado de views, curtidas e comentarios de todos os videos postados."
+            : "Comparativo de views, curtidas e comentarios no dia selecionado pelo backend."}
         </p>
 
         <div className="mt-4 grid gap-3">
