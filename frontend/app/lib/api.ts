@@ -75,6 +75,13 @@ export type YoutubeConnectionStatus = {
   } | null;
 };
 
+export type NicheItem = {
+  id: string;
+  name: string;
+  description: string | null;
+  active: boolean;
+};
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     cache: "no-store",
@@ -108,6 +115,47 @@ export async function getPosts(token: string) {
       Authorization: `Bearer ${token}`,
     },
   });
+}
+
+export async function getNiches() {
+  return request<NicheItem[]>('/niches');
+}
+
+export async function uploadVideoPost(
+  token: string,
+  payload: {
+    video: File;
+    title: string;
+    description?: string;
+    nicheId: string;
+    scheduledAt: string;
+  },
+) {
+  const formData = new FormData();
+  formData.append('video', payload.video);
+  formData.append('title', payload.title);
+  formData.append('nicheId', payload.nicheId);
+  formData.append('scheduledAt', payload.scheduledAt);
+
+  if (payload.description?.trim()) {
+    formData.append('description', payload.description.trim());
+  }
+
+  const response = await fetch(`${API_BASE_URL}/posts/upload-video`, {
+    method: 'POST',
+    cache: 'no-store',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || 'Falha ao enviar video');
+  }
+
+  return response.json();
 }
 
 export async function getUserById(userId: string, token: string) {
