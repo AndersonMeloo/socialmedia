@@ -1,6 +1,7 @@
-import { getPosts, getPostsOverview } from "../lib/api";
+  import { getNiches, getPosts, getPostsOverview } from "../lib/api";
 import { cookies } from "next/headers";
 import { ACCESS_TOKEN_COOKIE } from "../lib/auth-client";
+import { VideoUploadForm } from "./video-upload-form";
 
 function formatDate(value: string | null) {
   if (!value) return "-";
@@ -28,18 +29,21 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
 
   let posts = [] as Awaited<ReturnType<typeof getPosts>>;
   let overview = null as Awaited<ReturnType<typeof getPostsOverview>> | null;
+  let niches = [] as Awaited<ReturnType<typeof getNiches>>;
   let errorMessage = "";
 
   try {
     if (!accessToken) {
       errorMessage = "Sessão não encontrada. Faça login novamente.";
     } else {
-      const [postsResult, overviewResult] = await Promise.all([
+      const [postsResult, overviewResult, nichesResult] = await Promise.all([
         getPosts(accessToken),
         getPostsOverview(accessToken, selectedDate),
+        getNiches(),
       ]);
       posts = postsResult;
       overview = overviewResult;
+      niches = nichesResult;
     }
   } catch {
     errorMessage =
@@ -82,6 +86,10 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
         <article className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
           {errorMessage}
         </article>
+      ) : null}
+
+      {!errorMessage && accessToken ? (
+        <VideoUploadForm token={accessToken} niches={niches} />
       ) : null}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
