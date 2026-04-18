@@ -389,11 +389,13 @@ export class PostsService {
     for (let i = startIndex; i < 3; i++) {
       const scheduledDate = new Date(now);
 
-      // Horários: 9h, 13h, 17h
-      // scheduledDate.setHours(9 + i * 4, 0, 0, 0);
-
-      // TESTE DOS POSTS A CADA MINUTO
+      // POST NA HORA (teste/imediato)
+      // Se quiser publicar logo, deixe esta linha ativa e comente a de baixo.
       scheduledDate.setMinutes(now.getMinutes() + 1 + i);
+
+      // 9h, 13h e 17h (produção)
+      // Se quiser publicar na hora, comente este bloco e descomente o de cima.
+      // scheduledDate.setHours(9 + i * 4, 0, 0, 0);
 
       for (const platform of platforms) {
         const post = await this.prisma.post.create({
@@ -448,9 +450,31 @@ export class PostsService {
 
     await mkdir(queueDir, { recursive: true });
 
+    const latestScheduledPost = await this.prisma.post.findFirst({
+      where: {
+        userId: user.id,
+        platform: 'YOUTUBE',
+        scheduledAt: {
+          not: null,
+        },
+      },
+      orderBy: {
+        scheduledAt: 'desc',
+      },
+      select: {
+        scheduledAt: true,
+      },
+    });
+
+    const scheduleReferenceDate =
+      latestScheduledPost?.scheduledAt &&
+      latestScheduledPost.scheduledAt > new Date()
+        ? latestScheduledPost.scheduledAt
+        : new Date();
+
     const importedVideos: ImportedInboxVideo[] = [];
 
-    for (const fileName of videoFiles) {
+    for (const [index, fileName] of videoFiles.entries()) {
       const sourcePath = resolve(inboxDir, fileName);
       const extension = extname(fileName).toLowerCase();
       const baseName = basename(fileName, extension)
@@ -458,7 +482,10 @@ export class PostsService {
         .replace(/\s+/g, ' ')
         .trim();
       const title = baseName || 'Short automatica';
-      const scheduledAt = new Date(Date.now() + 3 * 60 * 1000);
+      const scheduledAt = this.getInboxScheduledAt(
+        scheduleReferenceDate,
+        index,
+      );
 
       const post = await this.prisma.post.create({
         data: {
@@ -498,6 +525,30 @@ export class PostsService {
     }
 
     return importedVideos;
+  }
+
+  private getInboxScheduledAt(referenceDate: Date, offset: number): Date {
+    const slotHours = [9, 13, 17];
+    const baseDate = new Date(referenceDate);
+    const currentMinutes = baseDate.getHours() * 60 + baseDate.getMinutes();
+
+    let slotIndex = slotHours.findIndex((hour) => hour * 60 > currentMinutes);
+    let dayOffset = 0;
+
+    if (slotIndex === -1) {
+      slotIndex = 0;
+      dayOffset = 1;
+    }
+
+    const totalIndex = slotIndex + offset;
+    dayOffset += Math.floor(totalIndex / slotHours.length);
+
+    const scheduledDate = new Date(baseDate);
+    scheduledDate.setHours(0, 0, 0, 0);
+    scheduledDate.setDate(scheduledDate.getDate() + dayOffset);
+    scheduledDate.setHours(slotHours[totalIndex % slotHours.length], 0, 0, 0);
+
+    return scheduledDate;
   }
 
   private extractYouTubeVideoId(url: string): string | null {
