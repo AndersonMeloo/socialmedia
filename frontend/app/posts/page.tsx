@@ -120,7 +120,7 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
       </div>
 
       <section className="rounded-xl border bg-white p-4">
-        <h3 className="text-lg font-semibold text-slate-900">Videos postados hoje</h3>
+        <h3 className="text-lg font-semibold text-slate-900">Videos com atividade no dia</h3>
 
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-200 border-collapse text-sm">
@@ -138,34 +138,42 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
               </tr>
             </thead>
             <tbody>
-              {(overview?.postedToday ?? []).map((post) => (
-                <tr key={post.id} className="border-b last:border-none">
-                  <td className="px-3 py-2 font-medium text-slate-900">{post.title}</td>
-                  <td className="hidden px-3 py-2 text-slate-700 md:table-cell">{post.platform}</td>
-                  <td className="px-3 py-2 text-slate-700">{post.status}</td>
-                  <td className="px-3 py-2 text-slate-700">{formatDate(post.postedAt)}</td>
-                  <td className="hidden px-3 py-2 text-slate-700 lg:table-cell">{formatDate(post.scheduledAt)}</td>
-                  <td className="px-3 py-2 text-slate-700">
-                    {post.status === "POSTED" && isYouTubeLink(post.videoUrl) ? (
-                      <a
-                        href={post.videoUrl ?? "#"}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-sky-700 underline decoration-sky-300 underline-offset-2"
-                      >
-                        Ver no YouTube
-                      </a>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                  <td className="px-3 py-2 text-slate-700">{post.latestAnalytics?.views ?? 0}</td>
-                  <td className="hidden px-3 py-2 text-slate-700 md:table-cell">{post.latestAnalytics?.likes ?? 0}</td>
-                  <td className="hidden px-3 py-2 text-slate-700 md:table-cell">
-                    {post.latestAnalytics?.comments ?? 0}
+              {(overview?.postedToday ?? []).length === 0 ? (
+                <tr>
+                  <td className="px-3 py-4 text-slate-600" colSpan={9}>
+                    Nenhum video com atividade na data selecionada.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                (overview?.postedToday ?? []).map((post) => (
+                  <tr key={post.id} className="border-b last:border-none">
+                    <td className="px-3 py-2 font-medium text-slate-900">{post.title}</td>
+                    <td className="hidden px-3 py-2 text-slate-700 md:table-cell">{post.platform}</td>
+                    <td className="px-3 py-2 text-slate-700">{post.status}</td>
+                    <td className="px-3 py-2 text-slate-700">{formatDate(post.postedAt)}</td>
+                    <td className="hidden px-3 py-2 text-slate-700 lg:table-cell">{formatDate(post.scheduledAt)}</td>
+                    <td className="px-3 py-2 text-slate-700">
+                      {post.status === "POSTED" && isYouTubeLink(post.videoUrl) ? (
+                        <a
+                          href={post.videoUrl ?? "#"}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sky-700 underline decoration-sky-300 underline-offset-2"
+                        >
+                          Ver no YouTube
+                        </a>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td className="px-3 py-2 text-slate-700">{post.latestAnalytics?.views ?? 0}</td>
+                    <td className="hidden px-3 py-2 text-slate-700 md:table-cell">{post.latestAnalytics?.likes ?? 0}</td>
+                    <td className="hidden px-3 py-2 text-slate-700 md:table-cell">
+                      {post.latestAnalytics?.comments ?? 0}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
