@@ -77,6 +77,14 @@ export class PostsService {
     private readonly configService: ConfigService,
   ) {}
 
+  private getLocalDateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
   private isUploadVideoFile(file: unknown): file is UploadVideoFile {
     if (!file || typeof file !== 'object') {
       return false;
@@ -229,7 +237,7 @@ export class PostsService {
     >();
 
     for (const snapshot of analyticsSnapshots) {
-      const date = snapshot.collectedAt.toISOString().slice(0, 10);
+      const date = this.getLocalDateKey(snapshot.collectedAt);
       const key = `${snapshot.postId}:${date}`;
 
       latestSnapshotByPostAndDay.set(key, {
@@ -270,7 +278,7 @@ export class PostsService {
       }
     >();
 
-    const selectedDateKey = startOfDay.toISOString().slice(0, 10);
+    const selectedDateKey = this.getLocalDateKey(startOfDay);
 
     // O diário representa variacao do dia (delta), nao acumulado total.
     for (const [, snapshots] of dailySnapshotsByPost.entries()) {
@@ -353,7 +361,7 @@ export class PostsService {
     );
 
     return {
-      date: startOfDay.toISOString().slice(0, 10),
+      date: selectedDateKey,
       totalsForDay,
       totalsAllTime,
       totalPostedVideos: postedVideos.length,
