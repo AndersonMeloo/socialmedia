@@ -140,12 +140,19 @@ export class PostsService {
     const startOfDay = new Date(targetDate);
     startOfDay.setHours(0, 0, 0, 0);
 
-    const [postedVideosForDayTable, postedVideos, analyticsSnapshots] =
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const [postedTodayPosts, postedVideos, analyticsSnapshots] =
       await Promise.all([
         this.prisma.post.findMany({
           where: {
             userId,
             status: 'POSTED',
+            postedAt: {
+              gte: startOfDay,
+              lte: endOfDay,
+            },
           },
           orderBy: {
             postedAt: 'desc',
@@ -264,18 +271,9 @@ export class PostsService {
     >();
 
     const selectedDateKey = startOfDay.toISOString().slice(0, 10);
-    const selectedDayDeltaByPost = new Map<
-      string,
-      {
-        views: number;
-        likes: number;
-        comments: number;
-        collectedAt: Date;
-      }
-    >();
 
     // O diário representa variacao do dia (delta), nao acumulado total.
-    for (const [postId, snapshots] of dailySnapshotsByPost.entries()) {
+    for (const [, snapshots] of dailySnapshotsByPost.entries()) {
       snapshots.sort((a, b) => a.date.localeCompare(b.date));
 
       let previous = { views: 0, likes: 0, comments: 0 };
@@ -300,15 +298,6 @@ export class PostsService {
           comments: current.comments + commentsDelta,
         });
 
-        if (snapshot.date === selectedDateKey) {
-          selectedDayDeltaByPost.set(postId, {
-            views: viewsDelta,
-            likes: likesDelta,
-            comments: commentsDelta,
-            collectedAt: snapshot.collectedAt,
-          });
-        }
-
         previous = {
           views: snapshot.views,
           likes: snapshot.likes,
@@ -332,8 +321,7 @@ export class PostsService {
       comments: 0,
     };
 
-    const postedToday = postedVideosForDayTable
-      .filter((post) => selectedDayDeltaByPost.has(post.id))
+    const postedToday = postedTodayPosts
       .map((post) => ({
         id: post.id,
         title: post.title,
@@ -342,7 +330,7 @@ export class PostsService {
         status: post.status,
         postedAt: post.postedAt,
         scheduledAt: post.scheduledAt,
-        latestAnalytics: selectedDayDeltaByPost.get(post.id) ?? null,
+        latestAnalytics: post.analytics[0] ?? null,
       }))
       .sort(
         (a, b) =>
